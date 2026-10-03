@@ -45,7 +45,7 @@ jobs:
         run: npx cap sync android
 
       - name: Use the fixed signing key (keeps updates installable over the old app)
-        run: mkdir -p ~/.android && cp keystore/debug.keystore ~/.android/debug.keystore
+        run: mkdir -p ~/.android && (cp keystore/debug.keystore ~/.android/debug.keystore || true)
 
       - name: Build the APK
         working-directory: android
@@ -64,5 +64,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: build-${{ github.run_number }}
-          name: AIPA Keys 1.0.${{ github.run_number }}
+          name: Tidora Keys 1.0.${{ github.run_number }}
           files: AIPAKeys-1.0.${{ github.run_number }}.apk
