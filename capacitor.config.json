@@ -1,0 +1,10 @@
+{
+  "appId": "com.ansil.aipakeys",
+  "appName": "AIPA Keys",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": false,
+    "webContentsDebuggingEnabled": false
+  }
+}

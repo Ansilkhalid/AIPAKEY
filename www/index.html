@@ -1,0 +1,142 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+<title>AIPA Key Maker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one narrow licence form, issued keys listed below like a ledger */
+:root{--bg:#F3F4F1;--card:#FFFFFF;--ink:#17201C;--sub:#5C6863;--line:#D7DDD9;--accent:#1F6F5C;--onacc:#FFFFFF;--warn:#A4532A;--soft:#E7EEEA;
+--display:"Archivo","Arial Narrow",system-ui,sans-serif;--body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111614;--card:#1A211E;--ink:#E6ECE9;--sub:#97A49E;--line:#2C3632;--accent:#5BC1A4;--onacc:#0E1513;--warn:#E3976C;--soft:#22302B;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#111614;--card:#1A211E;--ink:#E6ECE9;--sub:#97A49E;--line:#2C3632;--accent:#5BC1A4;--onacc:#0E1513;--warn:#E3976C;--soft:#22302B;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);padding-inline:16px;padding-block:28px 48px}
+.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1{font:800 30px/1.1 var(--display);margin:0;text-wrap:balance}
+.kick{font:600 12px/1 var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+p{margin:0}.sub{color:var(--sub)}
+form,.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:14px}
+label{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:13px;min-width:0}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;box-sizing:border-box}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--mono);letter-spacing:.04em}
+.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:480px){.row{grid-template-columns:1fr}}
+.seg{display:flex;background:var(--soft);border-radius:10px;padding:3px;gap:3px}
+.seg button{flex:1;border:0;background:transparent;border-radius:8px;padding:8px;font:600 13px var(--body);color:var(--ink);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--onacc)}
+.go{border:0;border-radius:12px;padding:12px 16px;font:700 15px var(--body);background:var(--accent);color:var(--onacc);cursor:pointer}
+.go:disabled{opacity:.5;cursor:default}
+.ghost{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:10px;padding:8px 12px;font:600 13px var(--body);cursor:pointer}
+.out textarea{min-height:110px;font:500 12px/1.45 var(--mono);word-break:break-all}
+.msg{font-weight:600;color:var(--accent)}.err{font-weight:600;color:var(--warn)}
+.ledger{display:flex;flex-direction:column}
+.led{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;padding:10px 0;border-top:1px solid var(--line);font-size:13px}
+.led:first-child{border-top:0}.led b{font-family:var(--mono)}.led span{color:var(--sub)}
+.tag{font:600 11px var(--body);padding:2px 8px;border-radius:999px;background:var(--soft);color:var(--accent);align-self:start}
+</style>
+</head><body>
+<div class="wrap" id="login">
+  <div><div class="kick">AIPA · admin</div><h1>Sign in</h1><p class="sub">AIPA Keys is locked. Sign in to make keys.</p></div>
+  <form id="lf" autocomplete="off">
+    <label for="uid">User ID<input id="uid" autocomplete="username" autocapitalize="none"></label>
+    <label for="lpw">Password<input id="lpw" type="password" autocomplete="current-password"></label>
+    <button class="go" type="submit" id="lgo">Sign in</button>
+    <p id="lm" class="err" hidden></p>
+    <p class="sub" style="font-size:13px">Forgot your password? Your original passphrase still signs you in.</p>
+  </form>
+</div>
+<div class="wrap" id="app" hidden>
+  <div><div class="kick">AIPA · admin</div><h1>Key maker</h1><p class="sub">Make a key for one phone. The friend sends you the device code from Settings › Plan; you send back the key.</p></div>
+  <form id="f" autocomplete="off">
+    <div class="row">
+      <label for="who">Who it's for<input id="who" placeholder="e.g. Rashid"></label>
+      <label for="dev">Device code<input id="dev" class="mono" placeholder="ABCDE-FGHJK" maxlength="11"></label>
+    </div>
+    <div><div style="font-weight:600;font-size:13px;margin-bottom:6px">Plan</div>
+      <div class="seg" role="group" aria-label="Plan"><button type="button" id="p-single" aria-pressed="true">Single device</button><button type="button" id="p-multi" aria-pressed="false">Multi-device (sync)</button></div></div>
+    <div class="row">
+      <label for="len">Length<select id="len"><option value="1">1 month</option><option value="3" selected>3 months</option><option value="6">6 months</option><option value="12">12 months</option><option value="c">Pick an end date</option></select></label>
+      <label for="end">Ends on<input id="end" type="date"></label>
+    </div>
+    <label for="beta" style="flex-direction:row;align-items:center;gap:10px"><input id="beta" type="checkbox" checked style="width:18px;height:18px"><span>Beta tester key (free). Turn off later for paid keys.</span></label>
+    <button class="go" id="mk" type="submit">Make key</button>
+    <p id="m" class="msg" hidden></p>
+  </form>
+  <div class="panel out" id="out" hidden>
+    <label for="key">Key<textarea id="key" readonly></textarea></label>
+    <label for="txt">Message to send<textarea id="txt" readonly style="min-height:90px;font:13px/1.45 var(--body)"></textarea></label>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="ghost" id="ck" type="button">Copy key</button><button class="ghost" id="ct" type="button">Copy message</button><button class="ghost" id="sh" type="button">Share (WhatsApp…)</button></div>
+  </div>
+  <details class="panel" id="acct"><summary><b>Account</b> · <span id="who-in"></span></summary>
+    <form id="cf" autocomplete="off" style="border:0;padding:0;background:none">
+      <label for="nuid">User ID<input id="nuid" autocapitalize="none"></label>
+      <label for="opw">Current password<input id="opw" type="password" autocomplete="current-password"></label>
+      <div class="row"><label for="npw">New password<input id="npw" type="password" autocomplete="new-password"></label><label for="npw2">New password again<input id="npw2" type="password" autocomplete="new-password"></label></div>
+      <button class="go" type="submit">Save user ID and password</button>
+      <p id="cm" class="msg" hidden></p>
+    </form>
+    <button class="ghost" id="out-btn" type="button">Sign out</button>
+  </details>
+  <div class="panel"><b>Keys made in this browser</b><div class="ledger" id="led"></div></div>
+  <p class="sub" style="font-size:13px">Keys are signed with your private key, stored here encrypted and unlocked only by your password. Keep it private: anyone with it can make keys. The app locks itself when you leave it. Multi-device keys also let the friend turn on sync; create their Firebase login (Authentication › Add user) before they try.</p>
+</div>
+<script>
+const ENC0={"salt": "fMm6hZAMs-cgvgFQxLhKTg", "iv": "WzmIUqi5fy5irlH4", "ct": "uBcc8MZemyZkeA4VLlgwQMvCsUW5zSMaDQ9F44ZGwFMUnA3gpzyqXnZYa1WESx4PU5ylNK9u_F59eDFxLB_fK5d8MCi8SrrP88ExGAFh0AG1OVPw0CIgBmpzMvMmZZ09DkEwDwLYgdGM3Ri31wmNMVia3fDATx0s6LVjY4_zreq4eSI3Ht52YGhwqfywktcGq4uGmTnIxovTqw", "iter": 250000};
+const LS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v);}catch(e){return null;}};
+let ENC=(()=>{try{return JSON.parse(LS("keys-enc")||"null")||ENC0;}catch(e){return ENC0;}})();
+const userId=()=>LS("keys-user")||"ansil";
+const $=(i)=>document.getElementById(i);
+const b64=(u)=>btoa(String.fromCharCode(...new Uint8Array(u))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+const unb=(s)=>{s=s.replace(/-/g,"+").replace(/_/g,"/");while(s.length%4)s+="=";return Uint8Array.from(atob(s),c=>c.charCodeAt(0));};
+let plan="single",priv=null;
+const iso=(d)=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+function setEnd(){const v=$("len").value;if(v==="c")return;const d=new Date();d.setMonth(d.getMonth()+Number(v));$("end").value=iso(d);}
+$("len").onchange=setEnd;setEnd();
+$("end").oninput=()=>{$("len").value="c";};
+["single","multi"].forEach(p=>{$("p-"+p).onclick=()=>{plan=p;["single","multi"].forEach(q=>$("p-"+q).setAttribute("aria-pressed",q===p));};});
+$("dev").oninput=(e)=>{let v=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,10);if(v.length>5)v=v.slice(0,5)+"-"+v.slice(5);e.target.value=v;};
+async function unlockWith(E,pw){const base=await crypto.subtle.importKey("raw",new TextEncoder().encode(pw),"PBKDF2",false,["deriveKey"]);
+ const k=await crypto.subtle.deriveKey({name:"PBKDF2",salt:unb(E.salt),iterations:E.iter,hash:"SHA-256"},base,{name:"AES-GCM",length:256},false,["decrypt"]);
+ const pk8=await crypto.subtle.decrypt({name:"AES-GCM",iv:unb(E.iv)},k,unb(E.ct));
+ return {pk8,key:await crypto.subtle.importKey("pkcs8",pk8,{name:"ECDSA",namedCurve:"P-256"},false,["sign"])};}
+let PK8=null;
+async function signIn(pw){try{return await unlockWith(ENC,pw);}catch(e){if(ENC!==ENC0){return await unlockWith(ENC0,pw);}throw e;}}
+async function seal(pk8,pw){const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));const base=await crypto.subtle.importKey("raw",new TextEncoder().encode(pw),"PBKDF2",false,["deriveKey"]);const k=await crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:250000,hash:"SHA-256"},base,{name:"AES-GCM",length:256},false,["encrypt"]);const ct=await crypto.subtle.encrypt({name:"AES-GCM",iv},k,pk8);return {salt:b64(salt),iv:b64(iv),ct:b64(ct),iter:250000};}
+function show(on){$("login").hidden=on;$("app").hidden=!on;if(on){$("who-in").textContent="signed in as "+userId();$("nuid").value=userId();}else{priv=null;PK8=null;$("lpw").value="";}}
+$("lf").addEventListener("submit",async(e)=>{e.preventDefault();const m=$("lm");m.hidden=true;$("lgo").disabled=true;$("lgo").textContent="Signing in…";
+ try{if($("uid").value.trim().toLowerCase()!==userId().toLowerCase())throw 0;const r=await signIn($("lpw").value);priv=r.key;PK8=r.pk8;show(true);}
+ catch(err){m.textContent="User ID or password is not right.";m.hidden=false;}
+ $("lgo").disabled=false;$("lgo").textContent="Sign in";});
+$("cf").addEventListener("submit",async(e)=>{e.preventDefault();const m=$("cm");m.hidden=false;m.className="msg";
+ const nu=$("nuid").value.trim(),np=$("npw").value;
+ if(!nu){m.className="err";m.textContent="Enter a user ID.";return;}
+ if(np&&np.length<8){m.className="err";m.textContent="Use at least 8 characters for the password.";return;}
+ if(np!==$("npw2").value){m.className="err";m.textContent="The new passwords are not the same.";return;}
+ try{await signIn($("opw").value);}catch(err){m.className="err";m.textContent="Current password is not right.";return;}
+ LS("keys-user",nu);
+ if(np){ENC=await seal(PK8,np);LS("keys-enc",JSON.stringify(ENC));}
+ ["opw","npw","npw2"].forEach(x=>$(x).value="");$("who-in").textContent="signed in as "+nu;m.textContent=np?"Saved. Use the new password next time.":"User ID saved.";});
+$("out-btn").onclick=()=>show(false);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")show(false);});
+function say(t,bad){const m=$("m");m.hidden=!t;m.textContent=t||"";m.className=bad?"err":"msg";}
+function hist(){let h=[];try{h=JSON.parse(localStorage.getItem("aipa-keys")||"[]");}catch(e){}return h;}
+function draw(){const h=hist(),el=$("led");el.innerHTML="";if(!h.length){el.innerHTML='<p class="sub">None yet. Keys you make here are listed so you can see who has what and when it ends.</p>';return;}
+ h.slice().reverse().forEach(x=>{const r=document.createElement("div");r.className="led";r.innerHTML=`<div><b></b><br><span></span></div><span class="tag"></span>`;r.querySelector("b").textContent=x.d;r.querySelectorAll("span")[0].textContent=`${x.who||"No name"} · ends ${x.e} · made ${x.at}`;r.querySelector(".tag").textContent=(x.b?"Beta · ":"")+(x.p==="multi"?"Multi-device":"Single");el.appendChild(r);});}
+draw();
+$("f").addEventListener("submit",async(e)=>{e.preventDefault();
+ const dev=$("dev").value.trim(),end=$("end").value;
+ if(!/^[A-Z0-9]{5}-[A-Z0-9]{5}$/.test(dev))return say("Enter the 10-character device code, like ABCDE-FGHJK.",true);
+ if(!end)return say("Pick an end date.",true);
+ if(!priv){show(false);return;}
+ const payload=b64(new TextEncoder().encode(JSON.stringify(Object.assign({d:dev,e:end,p:plan,i:iso(new Date()),n:$("who").value.trim().slice(0,30)},$("beta").checked?{b:1}:{}))));
+ const sig=await crypto.subtle.sign({name:"ECDSA",hash:"SHA-256"},priv,new TextEncoder().encode(payload));
+ const key=payload+"."+b64(sig);
+ $("key").value=key;
+ const beta=$("beta").checked;$("txt").value=beta?`Your AIPA beta tester key (${plan==="multi"?"multi-device":"single device"}), free until ${end}. Thanks for testing!\n\n${key}\n\nOpen AIPA › Settings › Plan › Your plan, paste it and tap Activate key. This is a free test key: no payment is involved.`:`Your AIPA key (${plan==="multi"?"multi-device":"single device"}, valid until ${end}):\n\n${key}\n\nOpen AIPA › Settings › Plan › Your plan, paste it and tap Activate key.`;
+ $("out").hidden=false;say("Key made.");
+ try{const h=hist();h.push({d:dev,e:end,p:plan,b:$("beta").checked?1:0,who:$("who").value.trim(),at:iso(new Date())});localStorage.setItem("aipa-keys",JSON.stringify(h.slice(-200)));}catch(err){}
+ draw();});
+async function cp(id){const t=$(id).value;try{await navigator.clipboard.writeText(t);say("Copied.");}catch(e){$(id).select();say("Selected. Press copy on your keyboard.");}}
+$("ck").onclick=()=>cp("key");$("sh").onclick=async()=>{const t=$("txt").value;try{const S=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Share;if(S){await S.share({text:t,dialogTitle:"Send key"});return;}if(navigator.share){await navigator.share({text:t});return;}}catch(e){}cp("txt");};$("ct").onclick=()=>cp("txt");
+</script>
+
+</body></html>
