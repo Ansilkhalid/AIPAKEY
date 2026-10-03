@@ -1,6 +1,6 @@
 {
   "appId": "com.ansil.aipakeys",
-  "appName": "AIPA Keys",
+  "appName": "Tidora Keys",
   "webDir": "www",
   "android": {
     "allowMixedContent": false,
