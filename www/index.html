@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
-<title>AIPA Key Maker</title>
+<title>Tidora Key Maker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
@@ -36,7 +36,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 </style>
 </head><body>
 <div class="wrap" id="login">
-  <div><div class="kick">AIPA · admin</div><h1>Sign in</h1><p class="sub">AIPA Keys is locked. Sign in to make keys.</p></div>
+  <div><div class="kick">Tidora · admin</div><h1>Sign in</h1><p class="sub">Tidora Keys is locked. Sign in to make keys.</p></div>
   <form id="lf" autocomplete="off">
     <label for="uid">User ID<input id="uid" autocomplete="username" autocapitalize="none"></label>
     <label for="lpw">Password<input id="lpw" type="password" autocomplete="current-password"></label>
@@ -46,7 +46,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
   </form>
 </div>
 <div class="wrap" id="app" hidden>
-  <div><div class="kick">AIPA · admin</div><h1>Key maker</h1><p class="sub">Make a key for one phone. The friend sends you the device code from Settings › Plan; you send back the key.</p></div>
+  <div><div class="kick">Tidora · admin</div><h1>Key maker</h1><p class="sub">Make a key for one phone. The friend sends you the device code from Settings › Plan; you send back the key.</p></div>
   <form id="f" autocomplete="off">
     <div class="row">
       <label for="who">Who it's for<input id="who" placeholder="e.g. Rashid"></label>
@@ -132,7 +132,7 @@ $("f").addEventListener("submit",async(e)=>{e.preventDefault();
  const sig=await crypto.subtle.sign({name:"ECDSA",hash:"SHA-256"},priv,new TextEncoder().encode(payload));
  const key=payload+"."+b64(sig);
  $("key").value=key;
- const beta=$("beta").checked;$("txt").value=beta?`Your AIPA beta tester key (${plan==="multi"?"multi-device":"single device"}), free until ${end}. Thanks for testing!\n\n${key}\n\nOpen AIPA › Settings › Plan › Your plan, paste it and tap Activate key. This is a free test key: no payment is involved.`:`Your AIPA key (${plan==="multi"?"multi-device":"single device"}, valid until ${end}):\n\n${key}\n\nOpen AIPA › Settings › Plan › Your plan, paste it and tap Activate key.`;
+ const beta=$("beta").checked;$("txt").value=beta?`Your Tidora beta tester key (${plan==="multi"?"multi-device":"single device"}), free until ${end}. Thanks for testing!\n\n${key}\n\nOpen Tidora › Settings › Plan › Your plan, paste it and tap Activate key. This is a free test key: no payment is involved.`:`Your Tidora key (${plan==="multi"?"multi-device":"single device"}, valid until ${end}):\n\n${key}\n\nOpen Tidora › Settings › Plan › Your plan, paste it and tap Activate key.`;
  $("out").hidden=false;say(`Key made for ${dev} at ${new Date().toLocaleTimeString()}.`);
  try{const h=hist();h.push({d:dev,e:end,p:plan,b:$("beta").checked?1:0,who:$("who").value.trim(),at:iso(new Date())});localStorage.setItem("aipa-keys",JSON.stringify(h.slice(-200)));}catch(err){}
  draw();});
